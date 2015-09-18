@@ -50,6 +50,7 @@ func main() {
 	r := v.Group("/jwt/")
 
 	jwt.JWTContextKey = key
+	jwt.Bearer = "CoolApp"
 	r.Use(jwt.JWTAuther(jwt.Options{
 		KeyFunc: func(ctx *vodka.Context) (string, error) {
 			return jwt.JWTContextKey, nil
@@ -75,7 +76,9 @@ func main() {
 	}
 	v.ServeHTTP(recorder, req)
 	fmt.Printf("Server Gen Token:\n%v\n", recorder.Body.String())
+
 	//--------------------
+
 	//Client Side
 	if token, err := jwt.NewToken(key, map[string]interface{}{"username": "Insion"}); err != nil {
 		fmt.Printf("Client Gen Token Error:%v\n", err)
@@ -86,7 +89,7 @@ func main() {
 			fmt.Println("http.NewRequest error:", err)
 			return
 		}
-		req.Header.Add("Authorization", "Bearer "+token)
+		req.Header.Add("Authorization", jwt.Bearer+" "+token)
 		recorder := httptest.NewRecorder()
 		v.ServeHTTP(recorder, req)
 		fmt.Printf("Client Got %v.", recorder.Body.String())
